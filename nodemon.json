@@ -1,0 +1,16 @@
+{
+  "verbose": true,
+  "execMap": {
+    "ts": "ts-node --cacheDirectory .tscache"
+  },
+  "events": {
+    "restart":
+      "osascript -e 'display notification \"server restarted due to:\n'$FILENAME'\" with title \"nodemon\"'"
+  },
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "ext": "ts",
+  "ignore": ["src/**/*.spec.ts"],
+  "watch": ["src/**/*.ts"]
+}
