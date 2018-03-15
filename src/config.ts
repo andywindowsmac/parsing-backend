@@ -6,7 +6,7 @@ export interface KeyValueArrayType {
 }
 
 const Blacklist: KeyValueArrayType = {
-  bigzid: ['/', '/postal/', '/contacts/', '/termsofuse/', '/privacy/'],
+  bizgid: ['/', '/postal/', '/contacts/', '/termsofuse/', '/privacy/'],
 };
 
 const Hosts: KeyValueStringType = {

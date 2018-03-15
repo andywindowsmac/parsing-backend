@@ -23,7 +23,8 @@
     "request-promise": "^4.2.2",
     "rxjs": "^5.5.7",
     "ts-node": "^5.0.1",
-    "typescript": "^2.7.2"
+    "typescript": "^2.7.2",
+    "windows-1251": "^1.0.0"
   },
   "devDependencies": {
     "chalk": "^2.3.2",
