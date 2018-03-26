@@ -46,8 +46,10 @@ const extractCommentsLinks = (html: string) => {
 const extractCommentObject = (html: string) => {
   const $ = cheerio.load(html, { decodeEntities: true });
   const span = $('#leftside > span');
+  const authorName = $('#leftside > span[style="font-weight:bold;"]').text();
+  const commentsDate = $('#leftside > div[class="archive"]').text();
   const images = $('img');
-
+  console.log('commentsDate: ', commentsDate);
   const signImage = (<any>Object)
     .values(images)
     .filter(
@@ -62,7 +64,20 @@ const extractCommentObject = (html: string) => {
   const position =
     signImage === '//www.spr.kz/images/signbad.png' ? false : true;
 
-  return { source: 'www.spr.kz', text: comment, position };
+  const source = {
+    name: 'Spr',
+    website: 'www.spr.kz',
+  };
+
+  const author = {
+    name: authorName,
+    gender: null,
+    age: null,
+    country: null,
+    city: null,
+  };
+
+  return { source, author, text: comment, position };
 };
 
 const convertToPromise = (url: string): Promise<Object> => {
@@ -109,23 +124,3 @@ const collectComments = async (companyName: string, callback: Function) => {
 };
 
 export { collectComments };
-
-// TODO: rewrite to observable
-
-// const requestStream = Rx.Observable.of(query)
-//     .flatMap((pageUrl: string) =>
-//       Rx.Observable.fromPromise(requestPromise(pageUrl)),
-//     )
-//     .flatMap((commentsPage: string) => extractLinksFromHTML(commentsPage))
-//     .flatMap((commentsPageLink: string) => {
-//       const requestLink = commentsPageLink.substr(2);
-//       return Rx.Observable.fromPromise(
-//         requestPromise(`https://${requestLink}`),
-//       );
-//     })
-//     .flatMap((commentsLink: string) => extractCommentsLinks(commentsLink))
-//     .flatMap((commentLink: string) => {
-//       const commentRequest = commentLink.substr(2);
-//       return observableRequest(`https://${commentRequest}`);
-//     })
-//     .subscribe(comments => console.log(comments));
