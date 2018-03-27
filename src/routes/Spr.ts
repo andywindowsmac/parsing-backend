@@ -47,9 +47,9 @@ const extractCommentObject = (html: string) => {
   const $ = cheerio.load(html, { decodeEntities: true });
   const span = $('#leftside > span');
   const authorName = $('#leftside > span[style="font-weight:bold;"]').text();
-  const commentsDate = $('#leftside > div[class="archive"]').text();
+  const commentsDate = $('#leftside').find('span');
   const images = $('img');
-  console.log('commentsDate: ', commentsDate);
+
   const signImage = (<any>Object)
     .values(images)
     .filter(
@@ -61,6 +61,10 @@ const extractCommentObject = (html: string) => {
     )
     .map(value => value.attribs.src)[0];
   const comment = span.text();
+
+  const commentDate = $(commentsDate[1]).text();
+  const likes = $(commentsDate[2]).text();
+
   const position =
     signImage === '//www.spr.kz/images/signbad.png' ? false : true;
 
@@ -77,7 +81,7 @@ const extractCommentObject = (html: string) => {
     city: null,
   };
 
-  return { source, author, text: comment, position };
+  return { source, author, text: comment, position, commentDate, likes };
 };
 
 const convertToPromise = (url: string): Promise<Object> => {
