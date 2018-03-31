@@ -61,13 +61,10 @@ const extractCommentObject = (html: string) => {
     )
     .map(value => value.attribs.src)[0];
   const comment = span.text();
-
   const commentDate = $(commentsDate[1]).text();
-  const likes = $(commentsDate[2]).text();
-
+  const views = $(commentsDate[2]).text();
   const position =
     signImage === '//www.spr.kz/images/signbad.png' ? false : true;
-
   const source = {
     name: 'Spr',
     website: 'www.spr.kz',
@@ -77,11 +74,18 @@ const extractCommentObject = (html: string) => {
     name: authorName,
     gender: null,
     age: null,
-    country: null,
-    city: null,
   };
 
-  return { source, author, text: comment, position, commentDate, likes };
+  return {
+    source,
+    author,
+    likes: null,
+    dislikes: null,
+    text: comment,
+    position,
+    date: commentDate,
+    views,
+  };
 };
 
 const convertToPromise = (url: string): Promise<Object> => {

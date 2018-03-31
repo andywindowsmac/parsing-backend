@@ -7,10 +7,10 @@ import HTTPCodes from '../HTTPCode';
 
 const RootRouter = express.Router();
 
-const prepareComments = (company, comments) => {
+const prepareComments = (source: string, comments: Object) => {
   const commentsArr = Object.keys(comments).map(key => comments[key]);
 
-  return { company, feeds: commentsArr };
+  return { source, feeds: commentsArr };
 };
 
 RootRouter.use('/comments', (req, res) => {
@@ -21,7 +21,7 @@ RootRouter.use('/comments', (req, res) => {
   }
 
   collectComments(companyName, comments => {
-    const readyComments = prepareComments(companyName, comments);
+    const readyComments = prepareComments('spr', comments);
 
     var options = {
       uri: 'http://feedtrap.tk/api/public/store',
@@ -39,7 +39,5 @@ RootRouter.use('/comments', (req, res) => {
 
   res.status(HTTPCodes.success).json({ message: 'Success' });
 });
-
-// RootRouter.use('/bizgid', Bizgid);
 
 export default RootRouter;
