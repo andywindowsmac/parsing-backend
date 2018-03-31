@@ -110,7 +110,7 @@ const observableRequest = (link: string) => {
   return Rx.Observable.fromPromise(promise);
 };
 
-const collectComments = async (companyName: string, callback: Function) => {
+const collectComments = async (companyName: string) => {
   const encodedQuery = windows1251.encode(companyName);
   const query = `https://www.spr.kz/res_new.php?findtext=${encodedQuery}&id_razdel_find=0&id_okrug_find=15`;
 
@@ -121,14 +121,13 @@ const collectComments = async (companyName: string, callback: Function) => {
   const firstFinded = await requestPromise(`https://${commentsQuery}`);
   const commentsLink = extractCommentsLinks(firstFinded);
 
-  Rx.Observable.from(commentsLink)
+  return Rx.Observable.from(commentsLink)
     .flatMap((commentLink: string) => {
       var commentsQuery = commentLink.substr(2);
       return observableRequest(`https://${commentsQuery}`);
     })
     .map((comment, index) => ({ [index]: comment }))
-    .reduce((acc, comment) => ({ ...acc, ...comment }))
-    .subscribe(comments => callback(comments));
+    .reduce((acc, comment) => ({ ...acc, ...comment }));
 };
 
 export { collectComments };
