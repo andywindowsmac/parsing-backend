@@ -61,7 +61,7 @@ const extractCommentObject = (html: string) => {
     )
     .map(value => value.attribs.src)[0];
   const comment = span.text();
-  const commentDate = $(commentsDate[1]).text();
+  const commentDate = new Date($(commentsDate[1]).text());
   const views = $(commentsDate[2]).text();
   const position =
     signImage === '//www.spr.kz/images/signbad.png' ? false : true;
@@ -70,17 +70,9 @@ const extractCommentObject = (html: string) => {
     website: 'www.spr.kz',
   };
 
-  const author = {
-    name: authorName,
-    gender: null,
-    age: null,
-  };
-
   return {
     source,
-    author,
-    likes: null,
-    dislikes: null,
+    name: authorName,
     text: comment,
     position,
     date: commentDate,
