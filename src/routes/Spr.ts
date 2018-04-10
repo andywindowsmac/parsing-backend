@@ -65,13 +65,8 @@ const extractCommentObject = (html: string) => {
   const views = $(commentsDate[2]).text();
   const position =
     signImage === '//www.spr.kz/images/signbad.png' ? false : true;
-  const source = {
-    name: 'Spr',
-    website: 'www.spr.kz',
-  };
 
   return {
-    source,
     name: authorName,
     text: comment,
     position,
