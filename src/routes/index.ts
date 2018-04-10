@@ -1,7 +1,6 @@
 import * as express from 'express';
 import * as requestPromise from 'request-promise';
 
-// import Bizgid from './Bizgid';
 import { collectComments as collectSprComments } from './Spr';
 import { collectComments as collectZhalobyComments } from './Zhaloby';
 
@@ -25,12 +24,10 @@ const prepareComments = (source: string, comments: Object) => {
     return { splittedArray };
   }
 
-  return { source, feeds: commentsArr };
+  return { [source]: commentsArr };
 };
 
-const sendComments = (source, comments) => {
-  const readyComments = prepareComments(source, comments);
-
+const sendComments = comments => {
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -39,8 +36,8 @@ const sendComments = (source, comments) => {
   const uri = 'http://feedtrap.tk/api/public/store';
   const method = 'POST';
 
-  if (readyComments.splittedArray) {
-    const splittedOptions = readyComments.splittedArray.map(s => ({
+  if (comments.splittedArray) {
+    const splittedOptions = comments.splittedArray.map(s => ({
       uri,
       headers,
       method,
@@ -55,7 +52,7 @@ const sendComments = (source, comments) => {
     uri,
     headers,
     method,
-    body: JSON.stringify(readyComments),
+    body: JSON.stringify(comments),
   };
 
   requestPromise(options).catch(error => console.error('Error: ', error));
@@ -69,7 +66,15 @@ const collectData = async (options: {
   const { companyName, collectFunction, source } = options;
   try {
     const comments = await collectFunction(companyName);
-    comments.subscribe(comments => sendComments(source, comments));
+    return new Promise((resolve, reject) => {
+      try {
+        comments.subscribe(comments =>
+          resolve(prepareComments(source, comments)),
+        );
+      } catch (err) {
+        reject(err);
+      }
+    });
   } catch (err) {
     console.log(err);
   }
@@ -82,17 +87,18 @@ RootRouter.use('/comments', async (req, res) => {
     return;
   }
 
-  collectData({
+  const zhaloby = await collectData({
     companyName,
     source: 'zhaloby',
     collectFunction: collectZhalobyComments,
   });
-  collectData({
+  const spr = await collectData({
     companyName,
     source: 'spr',
     collectFunction: collectSprComments,
   });
 
+  sendComments({ ...spr, ...zhaloby });
   res.status(HTTPCodes.success).json({ message: 'Success' });
 });
 
