@@ -23,26 +23,23 @@ const extractCommentObject = (html: string) => {
 
   const authorNick = $(details[1].children[1]).text();
   const date = details[3].attribs.showdata;
-  const source = {
-    name: 'Zhaloby',
-    website: 'zhalobi.kz',
-  };
+  let convertedDate;
+  if (date.includes('Вчера')) {
+    const generalDate = new Date();
+    /* tslint:disable */
+    convertedDate = parseInt(
+      generalDate.setDate(generalDate.getDate() - 1) / 1000,
+    );
+  }
 
-  const author = {
-    name: authorNick,
-    gender: null,
-    age: null,
-  };
+  if (date.includes('Сегодня')) {
+    convertedDate = parseInt(new Date().getTime() / 1000);
+  }
 
   return {
-    source,
-    author,
-    likes: null,
-    dislikes: null,
+    name: authorNick,
     text: `${title}: ${comment}`,
-    position: false,
-    date: date,
-    views: null,
+    date: convertedDate,
   };
 };
 
