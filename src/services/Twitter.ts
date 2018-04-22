@@ -13,7 +13,7 @@ const getTweets = (searchQuery: string) =>
     T.get(
       'search/tweets',
       { q: encodeURIComponent(searchQuery), count: 100 },
-      (err, data, response) => {
+      (err, data) => {
         if (err) {
           reject(err);
           return;

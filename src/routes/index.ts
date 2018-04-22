@@ -1,5 +1,4 @@
 import * as express from 'express';
-import * as requestPromise from 'request-promise';
 
 import { collectComments as collectSprComments } from './Spr';
 import { collectComments as collectZhalobyComments } from './Zhaloby';
@@ -11,60 +10,8 @@ const RootRouter = express.Router();
 
 const prepareComments = (source: string, comments: Object) => {
   const commentsArr = Object.keys(comments).map(key => comments[key]);
-  const maxChunk = 5000;
-
-  if (commentsArr.length > maxChunk) {
-    const splittedArray = [];
-
-    for (let i = 0; i <= maxChunk; i += maxChunk) {
-      splittedArray.push({
-        source,
-        feeds: commentsArr.splice(i, i + maxChunk),
-      });
-    }
-    return { splittedArray };
-  }
 
   return { [source]: commentsArr };
-};
-
-const sendComments = (comments, companyName) => {
-  const headers = {
-    Accept: 'application/json',
-    'Content-Type': 'application/x-www-form-urlencoded',
-  };
-
-  const uri = 'http://feedtrap.tk/api/public/store';
-  const method = 'POST';
-
-  const companyComments = {
-    name: companyName,
-    address: '',
-    phone: '',
-    website: '',
-    from: 0,
-  };
-
-  if (comments.splittedArray) {
-    const splittedOptions = comments.splittedArray.map(s => ({
-      uri,
-      headers,
-      method,
-      body: JSON.stringify({ ...companyComments, ...s }),
-    }));
-
-    splittedOptions.map(o => requestPromise(o));
-    return;
-  }
-
-  const options = {
-    uri,
-    headers,
-    method,
-    body: JSON.stringify({ ...companyComments, ...comments }),
-  };
-
-  requestPromise(options).catch(error => console.error('Error: ', error));
 };
 
 const collectData = async (options: {
@@ -121,10 +68,19 @@ RootRouter.post('/comments', async (req, res) => {
         async source => await collectData({ ...source, companyName }),
       ),
     );
+
+    const companyComments = {
+      name: companyName,
+      address: null,
+      phone: null,
+      website: null,
+      from: null,
+    };
     const comments = results.reduce((r, acc) => ({ ...acc, ...r }));
 
-    sendComments(comments, companyName);
-    res.status(HTTPCodes.success).json({ message: 'Success' });
+    const responseResult = { ...companyComments, ...comments };
+
+    res.status(HTTPCodes.success).json({ result: responseResult });
   } catch (err) {
     res.status(500).json({ message: 'Failed' });
   }
