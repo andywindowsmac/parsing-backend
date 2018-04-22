@@ -22,20 +22,23 @@ const extractCommentObject = (html: string) => {
   ).text();
 
   const authorNick = $(details[1].children[1]).text();
-  const date = details[3].attribs.showdata;
+  const date = details[3].attribs.showdata.split('Дата публикации: ')[1];
   let convertedDate;
+
+  if (!date.includes('Вчера') && !date.includes('Сегодня')) {
+    const splittedDate = date.split(', ')[0].replace(/\-/g, ':');
+    convertedDate = new Date(splittedDate).getTime() / 1000;
+  }
   if (date.includes('Вчера')) {
     const generalDate = new Date();
-    /* tslint:disable */
     convertedDate = parseInt(
-      generalDate.setDate(generalDate.getDate() - 1) / 1000,
+      String(generalDate.setDate(generalDate.getDate() - 1) / 1000),
     );
   }
 
   if (date.includes('Сегодня')) {
-    convertedDate = parseInt(new Date().getTime() / 1000);
+    convertedDate = parseInt(String(new Date().getTime() / 1000));
   }
-
   return {
     name: authorNick,
     text: `${title}: ${comment}`,

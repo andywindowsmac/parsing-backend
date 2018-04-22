@@ -16,6 +16,7 @@
     "@types/chalk": "^2.2.0",
     "@types/express": "^4.11.1",
     "@types/node": "^9.4.7",
+    "axios": "^0.18.0",
     "body-parser": "^1.18.2",
     "cheerio": "^1.0.0-rc.2",
     "express": "^4.16.3",
@@ -25,7 +26,9 @@
     "request-promise": "^4.2.2",
     "rxjs": "^5.5.7",
     "ts-node": "^5.0.1",
+    "twit": "^2.2.9",
     "typescript": "^2.7.2",
+    "vk-node": "0.0.4",
     "windows-1251": "^1.0.0"
   },
   "devDependencies": {

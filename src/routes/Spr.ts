@@ -62,7 +62,7 @@ const extractCommentObject = (html: string) => {
     .map(value => value.attribs.src)[0];
   const comment = span.text();
   const commentDate = parseInt(
-    new Date($(commentsDate[1]).text()).getTime() / 1000,
+    String(new Date($(commentsDate[1]).text()).getTime() / 1000),
   );
   const views = parseInt($(commentsDate[2]).text());
   const position =

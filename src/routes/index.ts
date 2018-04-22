@@ -5,6 +5,7 @@ import { collectComments as collectSprComments } from './Spr';
 import { collectComments as collectZhalobyComments } from './Zhaloby';
 
 import HTTPCodes from '../HTTPCode';
+import { getTweets } from '../services/Twitter';
 
 const RootRouter = express.Router();
 
@@ -27,7 +28,7 @@ const prepareComments = (source: string, comments: Object) => {
   return { [source]: commentsArr };
 };
 
-const sendComments = comments => {
+const sendComments = (comments, companyName) => {
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -36,12 +37,20 @@ const sendComments = comments => {
   const uri = 'http://feedtrap.tk/api/public/store';
   const method = 'POST';
 
+  const companyComments = {
+    name: companyName,
+    address: '',
+    phone: '',
+    website: '',
+    from: 0,
+  };
+
   if (comments.splittedArray) {
     const splittedOptions = comments.splittedArray.map(s => ({
       uri,
       headers,
       method,
-      body: JSON.stringify(s),
+      body: JSON.stringify({ ...companyComments, ...s }),
     }));
 
     splittedOptions.map(o => requestPromise(o));
@@ -52,7 +61,7 @@ const sendComments = comments => {
     uri,
     headers,
     method,
-    body: JSON.stringify(comments),
+    body: JSON.stringify({ ...companyComments, ...comments }),
   };
 
   requestPromise(options).catch(error => console.error('Error: ', error));
@@ -68,6 +77,10 @@ const collectData = async (options: {
     const comments = await collectFunction(companyName);
     return new Promise((resolve, reject) => {
       try {
+        if (!comments.subscribe) {
+          resolve(prepareComments(source, comments));
+          return;
+        }
         comments.subscribe(comments =>
           resolve(prepareComments(source, comments)),
         );
@@ -80,26 +93,41 @@ const collectData = async (options: {
   }
 };
 
-RootRouter.use('/comments', async (req, res) => {
+const sources = [
+  {
+    source: 'zhaloby',
+    collectFunction: collectZhalobyComments,
+  },
+  {
+    source: 'spr',
+    collectFunction: collectSprComments,
+  },
+  {
+    source: 'twitter',
+    collectFunction: getTweets,
+  },
+];
+
+RootRouter.post('/comments', async (req, res) => {
   const { companyName } = req.body;
   if (!companyName) {
     res.status(HTTPCodes.error).json({ message: 'Provide company name' });
     return;
   }
 
-  const zhaloby = await collectData({
-    companyName,
-    source: 'zhaloby',
-    collectFunction: collectZhalobyComments,
-  });
-  const spr = await collectData({
-    companyName,
-    source: 'spr',
-    collectFunction: collectSprComments,
-  });
+  try {
+    const results = await Promise.all(
+      sources.map(
+        async source => await collectData({ ...source, companyName }),
+      ),
+    );
+    const comments = results.reduce((r, acc) => ({ ...acc, ...r }));
 
-  sendComments({ ...spr, ...zhaloby });
-  res.status(HTTPCodes.success).json({ message: 'Success' });
+    sendComments(comments, companyName);
+    res.status(HTTPCodes.success).json({ message: 'Success' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
 });
 
 export default RootRouter;
