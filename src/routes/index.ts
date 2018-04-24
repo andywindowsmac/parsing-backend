@@ -40,22 +40,38 @@ const collectData = async (options: {
   }
 };
 
-const sources = [
-  {
-    source: 'zhaloby',
-    collectFunction: collectZhalobyComments,
-  },
-  {
-    source: 'spr',
-    collectFunction: collectSprComments,
-  },
-  {
-    source: 'twitter',
-    collectFunction: getTweets,
-  },
-];
+// RootRouter.post('/comments', async (req, res) => {
+//   const { companyName } = req.body;
+//   if (!companyName) {
+//     res.status(HTTPCodes.error).json({ message: 'Provide company name' });
+//     return;
+//   }
 
-RootRouter.post('/comments', async (req, res) => {
+//   try {
+//     const results = await Promise.all(
+//       sources.map(
+//         async source => await collectData({ ...source, companyName }),
+//       ),
+//     );
+
+//     const companyComments = {
+//       name: companyName,
+//       address: null,
+//       phone: null,
+//       website: null,
+//       from: null,
+//     };
+//     const comments = results.reduce((r, acc) => ({ ...acc, ...r }));
+
+//     const responseResult = { ...companyComments, ...comments };
+
+//     res.status(HTTPCodes.success).json({ result: responseResult });
+//   } catch (err) {
+//     res.status(500).json({ message: 'Failed' });
+//   }
+// });
+
+RootRouter.post('/twitter', async (req, res) => {
   const { companyName } = req.body;
   if (!companyName) {
     res.status(HTTPCodes.error).json({ message: 'Provide company name' });
@@ -63,11 +79,11 @@ RootRouter.post('/comments', async (req, res) => {
   }
 
   try {
-    const results = await Promise.all(
-      sources.map(
-        async source => await collectData({ ...source, companyName }),
-      ),
-    );
+    const tweets = await collectData({
+      source: 'twitter',
+      collectFunction: getTweets,
+      companyName,
+    });
 
     const companyComments = {
       name: companyName,
@@ -75,12 +91,68 @@ RootRouter.post('/comments', async (req, res) => {
       phone: null,
       website: null,
       from: null,
+      ...tweets,
     };
-    const comments = results.reduce((r, acc) => ({ ...acc, ...r }));
 
-    const responseResult = { ...companyComments, ...comments };
+    res.status(HTTPCodes.success).json({ result: companyComments });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
 
-    res.status(HTTPCodes.success).json({ result: responseResult });
+RootRouter.post('/spr', async (req, res) => {
+  const { companyName } = req.body;
+  if (!companyName) {
+    res.status(HTTPCodes.error).json({ message: 'Provide company name' });
+    return;
+  }
+
+  try {
+    const comments = await collectData({
+      source: 'spr',
+      collectFunction: collectSprComments,
+      companyName,
+    });
+
+    const companyComments = {
+      name: companyName,
+      address: null,
+      phone: null,
+      website: null,
+      from: null,
+      ...comments,
+    };
+
+    res.status(HTTPCodes.success).json({ result: companyComments });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
+
+RootRouter.post('/zhaloby', async (req, res) => {
+  const { companyName } = req.body;
+  if (!companyName) {
+    res.status(HTTPCodes.error).json({ message: 'Provide company name' });
+    return;
+  }
+
+  try {
+    const comments = await collectData({
+      source: 'zhaloby',
+      collectFunction: collectZhalobyComments,
+      companyName,
+    });
+
+    const companyComments = {
+      name: companyName,
+      address: null,
+      phone: null,
+      website: null,
+      from: null,
+      ...comments,
+    };
+
+    res.status(HTTPCodes.success).json({ result: companyComments });
   } catch (err) {
     res.status(500).json({ message: 'Failed' });
   }
