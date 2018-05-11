@@ -8,29 +8,26 @@ import { getTweets } from "../services/Twitter";
 
 const RootRouter = express.Router();
 
-const prepareComments = (source: string, comments: Object) => {
+const prepareComments = (comments: Object) => {
   const commentsArr = Object.keys(comments).map(key => comments[key]);
 
   return commentsArr;
 };
 
 const collectData = async (options: {
-  source: string;
   companyName: string;
   collectFunction: any;
 }) => {
-  const { companyName, collectFunction, source } = options;
+  const { companyName, collectFunction } = options;
   try {
     const comments = await collectFunction(companyName);
     return new Promise((resolve, reject) => {
       try {
         if (!comments.subscribe) {
-          resolve(prepareComments(source, comments));
+          resolve(prepareComments(comments));
           return;
         }
-        comments.subscribe(comments =>
-          resolve(prepareComments(source, comments))
-        );
+        comments.subscribe(comments => resolve(prepareComments(comments)));
       } catch (err) {
         reject(err);
       }
@@ -49,7 +46,6 @@ RootRouter.post("/twitter", async (req, res) => {
 
   try {
     const tweets = await collectData({
-      source: "twitter",
       collectFunction: getTweets,
       companyName
     });
@@ -73,7 +69,6 @@ RootRouter.post("/spr", async (req, res) => {
 
   try {
     const comments = await collectData({
-      source: "spr",
       collectFunction: collectSprComments,
       companyName
     });
@@ -97,7 +92,6 @@ RootRouter.post("/zhaloby", async (req, res) => {
 
   try {
     const comments = await collectData({
-      source: "zhaloby",
       collectFunction: collectZhalobyComments,
       companyName
     });
