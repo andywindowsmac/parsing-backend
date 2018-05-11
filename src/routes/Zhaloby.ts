@@ -1,7 +1,8 @@
-import * as Rx from 'rxjs';
-import * as cheerio from 'cheerio';
-import * as requestPromise from 'request-promise';
-import { _throw } from 'rxjs/observable/throw';
+import { _throw } from "rxjs/observable/throw";
+import * as cheerio from "cheerio";
+import * as requestPromise from "request-promise";
+import * as Rx from "rxjs";
+import axios from "axios";
 
 const extractLinks = (html: string) => {
   const $ = cheerio.load(html);
@@ -18,31 +19,31 @@ const extractCommentObject = (html: string) => {
   const details = div.children()[3].children;
 
   const title = $(
-    titleChildrens.children[titleChildrens.children.length - 1],
+    titleChildrens.children[titleChildrens.children.length - 1]
   ).text();
 
   const authorNick = $(details[1].children[1]).text();
-  const date = details[3].attribs.showdata.split('Дата публикации: ')[1];
+  const date = details[3].attribs.showdata.split("Дата публикации: ")[1];
   let convertedDate;
 
-  if (!date.includes('Вчера') && !date.includes('Сегодня')) {
-    const splittedDate = date.split(', ')[0].replace(/\-/g, ':');
+  if (!date.includes("Вчера") && !date.includes("Сегодня")) {
+    const splittedDate = date.split(", ")[0].replace(/\-/g, ":");
     convertedDate = new Date(splittedDate).getTime() / 1000;
   }
-  if (date.includes('Вчера')) {
+  if (date.includes("Вчера")) {
     const generalDate = new Date();
     convertedDate = parseInt(
-      String(generalDate.setDate(generalDate.getDate() - 1) / 1000),
+      String(generalDate.setDate(generalDate.getDate() - 1) / 1000)
     );
   }
 
-  if (date.includes('Сегодня')) {
+  if (date.includes("Сегодня")) {
     convertedDate = parseInt(String(new Date().getTime() / 1000));
   }
   return {
     name: authorNick,
     text: `${title}: ${comment}`,
-    date: convertedDate,
+    date: convertedDate
   };
 };
 
@@ -58,23 +59,15 @@ const collectComments = async (companyName: string) => {
   const query = `https://zhalobi.kz/`;
 
   const formData = {
-    do: 'search',
-    subaction: 'search',
-    story: companyName,
+    do: "search",
+    subaction: "search",
+    story: companyName
   };
 
-  var options = {
-    uri: query,
-    method: 'POST',
-    body: JSON.stringify(formData),
-  };
-
-  const promise = requestPromise(options)
-    .then(comment => comment)
-    .catch(err => _throw(err));
+  const promise = axios.post(query, formData);
 
   return Rx.Observable.fromPromise(promise)
-    .flatMap((html: string) => extractLinks(html))
+    .flatMap(({ data }) => extractLinks(data))
     .flatMap((commentLink: string) => observableCommentRequest(commentLink))
     .map((comment, index) => ({ [index]: comment }))
     .reduce((acc, comment) => ({ ...acc, ...comment }));
