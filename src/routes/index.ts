@@ -11,7 +11,7 @@ const RootRouter = express.Router();
 const prepareComments = (source: string, comments: Object) => {
   const commentsArr = Object.keys(comments).map(key => comments[key]);
 
-  return { [source]: commentsArr };
+  return commentsArr;
 };
 
 const collectData = async (options: {
@@ -55,7 +55,6 @@ RootRouter.post("/twitter", async (req, res) => {
     });
 
     const companyComments = {
-      name: companyName,
       ...tweets
     };
 
@@ -80,7 +79,6 @@ RootRouter.post("/spr", async (req, res) => {
     });
 
     const companyComments = {
-      name: companyName,
       ...comments
     };
 
@@ -105,7 +103,6 @@ RootRouter.post("/zhaloby", async (req, res) => {
     });
 
     const companyComments = {
-      name: companyName,
       ...comments
     };
 
