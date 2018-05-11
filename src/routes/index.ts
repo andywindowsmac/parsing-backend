@@ -1,10 +1,10 @@
-import * as express from 'express';
+import * as express from "express";
 
-import { collectComments as collectSprComments } from './Spr';
-import { collectComments as collectZhalobyComments } from './Zhaloby';
+import { collectComments as collectSprComments } from "./Spr";
+import { collectComments as collectZhalobyComments } from "./Zhaloby";
 
-import HTTPCodes from '../HTTPCode';
-import { getTweets } from '../services/Twitter';
+import HTTPCodes from "../HTTPCode";
+import { getTweets } from "../services/Twitter";
 
 const RootRouter = express.Router();
 
@@ -29,7 +29,7 @@ const collectData = async (options: {
           return;
         }
         comments.subscribe(comments =>
-          resolve(prepareComments(source, comments)),
+          resolve(prepareComments(source, comments))
         );
       } catch (err) {
         reject(err);
@@ -40,121 +40,78 @@ const collectData = async (options: {
   }
 };
 
-// RootRouter.post('/comments', async (req, res) => {
-//   const { companyName } = req.body;
-//   if (!companyName) {
-//     res.status(HTTPCodes.error).json({ message: 'Provide company name' });
-//     return;
-//   }
-
-//   try {
-//     const results = await Promise.all(
-//       sources.map(
-//         async source => await collectData({ ...source, companyName }),
-//       ),
-//     );
-
-//     const companyComments = {
-//       name: companyName,
-//       address: null,
-//       phone: null,
-//       website: null,
-//       from: null,
-//     };
-//     const comments = results.reduce((r, acc) => ({ ...acc, ...r }));
-
-//     const responseResult = { ...companyComments, ...comments };
-
-//     res.status(HTTPCodes.success).json({ result: responseResult });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Failed' });
-//   }
-// });
-
-RootRouter.post('/twitter', async (req, res) => {
+RootRouter.post("/twitter", async (req, res) => {
   const { companyName } = req.body;
   if (!companyName) {
-    res.status(HTTPCodes.error).json({ message: 'Provide company name' });
+    res.status(HTTPCodes.error).json({ message: "Provide company name" });
     return;
   }
 
   try {
     const tweets = await collectData({
-      source: 'twitter',
+      source: "twitter",
       collectFunction: getTweets,
-      companyName,
+      companyName
     });
 
     const companyComments = {
       name: companyName,
-      address: null,
-      phone: null,
-      website: null,
-      from: null,
-      ...tweets,
+      ...tweets
     };
 
     res.status(HTTPCodes.success).json({ result: companyComments });
   } catch (err) {
-    res.status(500).json({ message: 'Failed' });
+    res.status(500).json({ message: "Failed" });
   }
 });
 
-RootRouter.post('/spr', async (req, res) => {
+RootRouter.post("/spr", async (req, res) => {
   const { companyName } = req.body;
   if (!companyName) {
-    res.status(HTTPCodes.error).json({ message: 'Provide company name' });
+    res.status(HTTPCodes.error).json({ message: "Provide company name" });
     return;
   }
 
   try {
     const comments = await collectData({
-      source: 'spr',
+      source: "spr",
       collectFunction: collectSprComments,
-      companyName,
+      companyName
     });
 
     const companyComments = {
       name: companyName,
-      address: null,
-      phone: null,
-      website: null,
-      from: null,
-      ...comments,
+      ...comments
     };
 
     res.status(HTTPCodes.success).json({ result: companyComments });
   } catch (err) {
-    res.status(500).json({ message: 'Failed' });
+    res.status(500).json({ message: "Failed" });
   }
 });
 
-RootRouter.post('/zhaloby', async (req, res) => {
+RootRouter.post("/zhaloby", async (req, res) => {
   const { companyName } = req.body;
   if (!companyName) {
-    res.status(HTTPCodes.error).json({ message: 'Provide company name' });
+    res.status(HTTPCodes.error).json({ message: "Provide company name" });
     return;
   }
 
   try {
     const comments = await collectData({
-      source: 'zhaloby',
+      source: "zhaloby",
       collectFunction: collectZhalobyComments,
-      companyName,
+      companyName
     });
 
     const companyComments = {
       name: companyName,
-      address: null,
-      phone: null,
-      website: null,
-      from: null,
-      ...comments,
+      ...comments
     };
 
     res.status(HTTPCodes.success).json({ result: companyComments });
   } catch (err) {
-    res.status(500).json({ message: 'Failed' });
+    res.status(500).json({ message: "Failed" });
   }
 });
 
