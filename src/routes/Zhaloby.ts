@@ -5,8 +5,10 @@ import * as Rx from "rxjs";
 import axios from "axios";
 
 const extractLinks = (html: string) => {
+  console.log(html);
   const $ = cheerio.load(html);
-  const linksHtml = $('div[class="read_bt"] > a');
+  const linksHtml = $("div.read_bt > a");
+
   return linksHtml.map(index => linksHtml[index].attribs.href);
 };
 
@@ -58,16 +60,23 @@ const observableCommentRequest = (link: string) => {
 const collectComments = async (companyName: string) => {
   const query = `https://zhalobi.kz/`;
 
-  const formData = {
-    do: "search",
-    subaction: "search",
-    story: companyName
+  var options = {
+    method: "POST",
+    uri: query,
+    form: {
+      do: "search",
+      subaction: "search",
+      story: companyName
+    },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
   };
 
-  const promise = axios.post(query, formData);
+  const promise = requestPromise(options);
 
   return Rx.Observable.fromPromise(promise)
-    .flatMap(({ data }) => extractLinks(data))
+    .flatMap((html: string) => extractLinks(html))
     .flatMap((commentLink: string) => observableCommentRequest(commentLink))
     .map((comment, index) => ({ [index]: comment }))
     .reduce((acc, comment) => ({ ...acc, ...comment }));
