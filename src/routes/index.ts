@@ -50,11 +50,7 @@ RootRouter.post("/twitter", async (req, res) => {
       companyName
     });
 
-    const companyComments = {
-      ...tweets
-    };
-
-    res.status(HTTPCodes.success).json({ result: companyComments });
+    res.status(HTTPCodes.success).json({ result: tweets });
   } catch (err) {
     res.status(500).json({ message: "Failed" });
   }
@@ -73,11 +69,7 @@ RootRouter.post("/spr", async (req, res) => {
       companyName
     });
 
-    const companyComments = {
-      ...comments
-    };
-
-    res.status(HTTPCodes.success).json({ result: companyComments });
+    res.status(HTTPCodes.success).json({ result: comments });
   } catch (err) {
     res.status(500).json({ message: "Failed" });
   }
@@ -96,11 +88,7 @@ RootRouter.post("/zhaloby", async (req, res) => {
       companyName
     });
 
-    const companyComments = {
-      ...comments
-    };
-
-    res.status(HTTPCodes.success).json({ result: companyComments });
+    res.status(HTTPCodes.success).json({ result: comments });
   } catch (err) {
     res.status(500).json({ message: "Failed" });
   }
