@@ -1,11 +1,16 @@
+import * as _ from "lodash";
 import { _throw } from "rxjs/observable/throw";
 import * as cheerio from "cheerio";
 import * as requestPromise from "request-promise";
 import * as Rx from "rxjs";
-import axios from "axios";
+
+const extractNavigation = (html: string) => {
+  const $ = cheerio.load(html);
+  const linksHtml = $("div.navigation > a");
+  return linksHtml.length + 1;
+};
 
 const extractLinks = (html: string) => {
-  console.log(html);
   const $ = cheerio.load(html);
   const linksHtml = $("div.read_bt > a");
 
@@ -58,28 +63,87 @@ const observableCommentRequest = (link: string) => {
 };
 
 const collectComments = async (companyName: string) => {
-  const query = `https://zhalobi.kz/`;
+  const pageQuery = "https://zhalobi.kz/index.php?do=search";
 
-  var options = {
+  const pageOptions = (pageNumber, resultNumber) => ({
     method: "POST",
-    uri: query,
+    uri: pageQuery,
     form: {
       do: "search",
       subaction: "search",
-      story: companyName
+      story: companyName,
+      search_start: pageNumber,
+      full_search: 0,
+      result_from: resultNumber
     },
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
     }
-  };
+  });
 
-  const promise = requestPromise(options);
+  let pageCount;
+  let comments = {};
+  let index = 1;
 
-  return Rx.Observable.fromPromise(promise)
-    .flatMap((html: string) => extractLinks(html))
-    .flatMap((commentLink: string) => observableCommentRequest(commentLink))
-    .map((comment, index) => ({ [index]: comment }))
-    .reduce((acc, comment) => ({ ...acc, ...comment }));
+  /* Extract comment stream */
+  const commentRequestStream = (
+    observable: Rx.Observable<string>
+  ): Rx.Observable<{
+    [x: number]: any;
+  }> =>
+    observable
+      .flatMap((html: string) => {
+        /* extract extract comments link */
+        return extractLinks(html);
+      })
+      .flatMap((commentLink: string) =>
+        /* request comments link */
+        observableCommentRequest(commentLink)
+      )
+      /* save comment with index as key  */
+      .map(comment => ({ [index++]: comment }))
+      /* gather all comments into one object */
+      .reduce((acc, comment) => ({ ...acc, ...comment }));
+
+  const firstPromise = requestPromise(pageOptions(1, 1));
+
+  const firstRequestObservable = Rx.Observable.fromPromise(firstPromise).map(
+    (html: string) => {
+      pageCount = extractNavigation(html);
+      return html;
+    }
+  );
+
+  const firstCommentsStream = commentRequestStream(firstRequestObservable);
+
+  return new Promise(resolve => {
+    firstCommentsStream
+      .flatMap(firstComments => {
+        comments = { ...comments, ...firstComments };
+        if (pageCount === 1) {
+          resolve(comments);
+          return Rx.Observable.empty();
+        }
+        return _.range(pageCount - 1);
+      })
+      .concatMap((value: number) =>
+        Rx.Observable.from(
+          commentRequestStream(
+            Rx.Observable.fromPromise(
+              requestPromise(
+                pageOptions(value + 2, Object.keys(comments).length + 1)
+              )
+            )
+          )
+        )
+      )
+      .map(newComments => {
+        comments = { ...comments, ...newComments };
+        return comments;
+      })
+      .reduce((_s, acc) => acc)
+      .subscribe(comments => resolve(comments));
+  });
 };
 
 export { collectComments };
