@@ -50,7 +50,7 @@ RootRouter.post("/twitter", async (req, res) => {
       companyName
     });
 
-    res.status(HTTPCodes.success).json({ result: tweets });
+    res.status(HTTPCodes.success).json({ tweets });
   } catch (err) {
     res.status(500).json({ message: "Failed" });
   }
@@ -69,7 +69,7 @@ RootRouter.post("/spr", async (req, res) => {
       companyName
     });
 
-    res.status(HTTPCodes.success).json({ result: comments });
+    res.status(HTTPCodes.success).json({ comments });
   } catch (err) {
     res.status(500).json({ message: "Failed" });
   }
@@ -88,7 +88,7 @@ RootRouter.post("/zhaloby", async (req, res) => {
       companyName
     });
 
-    res.status(HTTPCodes.success).json({ result: comments });
+    res.status(HTTPCodes.success).json({ comments });
   } catch (err) {
     res.status(500).json({ message: "Failed" });
   }
