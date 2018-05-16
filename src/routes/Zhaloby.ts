@@ -29,8 +29,11 @@ const extractCommentObject = (html: string) => {
   let convertedDate;
 
   if (!date.includes("Вчера") && !date.includes("Сегодня")) {
-    const splittedDate = date.split(", ")[0].replace(/\-/g, ":");
-    convertedDate = new Date(splittedDate).getTime() / 1000;
+    const splittedDate = date.split(", ")[0].split(/\-/g);
+    convertedDate =
+      new Date(
+        `${splittedDate[2]}-${splittedDate[1]}-${splittedDate[0]}`
+      ).getTime() / 1000;
   }
   if (date.includes("Вчера")) {
     const generalDate = new Date();
