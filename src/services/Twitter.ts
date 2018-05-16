@@ -1,17 +1,17 @@
-import * as Twit from 'twit';
+import * as Twit from "twit";
 
 const T = new Twit({
-  consumer_key: 'nAOGsRYeQMBA77QbbKBEuiGPY',
-  consumer_secret: 'ovvrevhJGUwGnA6gmL1lmtstlBpBXay7Hc539Mg6ATz1GQLklw',
-  access_token: '740941430462369792-bqyHqDv3DozDPkJAFjTlpGhOfGJsBTF',
-  access_token_secret: '1shmXfKIJcN2RwY5wV727rAk6s6Z7xD78UVQA9hEBD0C3',
-  timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests.
+  consumer_key: "nAOGsRYeQMBA77QbbKBEuiGPY",
+  consumer_secret: "ovvrevhJGUwGnA6gmL1lmtstlBpBXay7Hc539Mg6ATz1GQLklw",
+  access_token: "740941430462369792-bqyHqDv3DozDPkJAFjTlpGhOfGJsBTF",
+  access_token_secret: "1shmXfKIJcN2RwY5wV727rAk6s6Z7xD78UVQA9hEBD0C3",
+  timeout_ms: 60 * 1000 // optional HTTP request timeout to apply to all requests.
 });
 
 const getTweets = (searchQuery: string) =>
   new Promise((resolve, reject) =>
     T.get(
-      'search/tweets',
+      "search/tweets",
       { q: encodeURIComponent(searchQuery), count: 100 },
       (err, data) => {
         if (err) {
@@ -22,8 +22,8 @@ const getTweets = (searchQuery: string) =>
         const tweets = prepareTweets(data.statuses);
 
         resolve(tweets);
-      },
-    ),
+      }
+    )
   );
 
 export interface TweetType {
@@ -42,10 +42,11 @@ const prepareTweets = (tweets: Array<TweetType> | any) =>
       created_at,
       user: { name },
       favorite_count,
-      retweet_count,
+      retweet_count
     } = tweet;
 
     const date = new Date(created_at).getTime() / 1000;
+    const extractLink = text.split("…")[1];
 
     return {
       text,
@@ -53,6 +54,7 @@ const prepareTweets = (tweets: Array<TweetType> | any) =>
       name,
       likes: favorite_count,
       reposts: retweet_count,
+      link: extractLink || null
     };
   });
 

@@ -25,10 +25,6 @@ const extractCommentObject = (html: string) => {
   const comment = $(div.children()[1]).text();
   const details = div.children()[3].children;
 
-  const title = $(
-    titleChildrens.children[titleChildrens.children.length - 1]
-  ).text();
-
   const authorNick = $(details[1].children[1]).text();
   const date = details[3].attribs.showdata.split("Дата публикации: ")[1];
   let convertedDate;
