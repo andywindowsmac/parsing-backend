@@ -50,11 +50,12 @@ const extractCommentObject = (html: string) => {
 
   const commentWithRemovedCharacters = comment
     .replace(/\t/g, "")
-    .replace(/\n/g, "");
+    .replace(/\n/g, "")
+    .replace("               ", "");
 
   return {
     name: authorNick,
-    text: `${title}: ${commentWithRemovedCharacters}`,
+    text: commentWithRemovedCharacters,
     date: convertedDate
   };
 };
