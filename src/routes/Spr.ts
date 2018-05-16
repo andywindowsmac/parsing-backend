@@ -126,20 +126,19 @@ const collectComments = async (companyName: string) => {
       .reduce((acc, comment) => ({ ...acc, ...comment }));
 
   return new Promise(resolve =>
-    Rx.Observable.onErrorResumeNext(
-      Rx.Observable.from(links)
-        .flatMap((link: string) => {
-          const commentsQuery = link.substr(2);
-          return Rx.Observable.from(
-            commentRequestStream(
-              Rx.Observable.fromPromise(
-                requestPromise(`https://${commentsQuery}`)
-              )
+    Rx.Observable.from(links)
+      .flatMap((link: string) => {
+        const commentsQuery = link.substr(2);
+        return Rx.Observable.from(
+          commentRequestStream(
+            Rx.Observable.fromPromise(
+              requestPromise(`https://${commentsQuery}`)
             )
-          );
-        })
-        .reduce((_s, acc) => ({ ...acc, ..._s }))
-    ).subscribe(comments => resolve(comments))
+          )
+        );
+      })
+      .reduce((_s, acc) => ({ ...acc, ..._s }))
+      .subscribe(comments => resolve(comments))
   );
 };
 
