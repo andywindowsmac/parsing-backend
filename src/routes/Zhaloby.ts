@@ -88,14 +88,20 @@ const collectComments = async (companyName: string) => {
 
   /* Extract comment stream */
   const commentRequestStream = (
-    observable: Rx.Observable<string>
+    observable: Rx.Observable<string>,
+    resolve
   ): Rx.Observable<{
     [x: number]: any;
   }> =>
     observable
       .flatMap((html: string) => {
         /* extract extract comments link */
-        return extractLinks(html);
+        const links = extractLinks(html);
+        if (links.length === 0) {
+          resolve({});
+          return Rx.Observable.empty();
+        }
+        return links;
       })
       .flatMap((commentLink: string) =>
         /* request comments link */
@@ -115,9 +121,12 @@ const collectComments = async (companyName: string) => {
     }
   );
 
-  const firstCommentsStream = commentRequestStream(firstRequestObservable);
-
   return new Promise(resolve => {
+    const firstCommentsStream = commentRequestStream(
+      firstRequestObservable,
+      resolve
+    );
+
     firstCommentsStream
       .flatMap(firstComments => {
         comments = { ...comments, ...firstComments };
@@ -134,7 +143,8 @@ const collectComments = async (companyName: string) => {
               requestPromise(
                 pageOptions(value + 2, Object.keys(comments).length + 1)
               )
-            )
+            ),
+            resolve
           )
         )
       )
