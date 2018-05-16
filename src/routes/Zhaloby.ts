@@ -21,7 +21,6 @@ const extractCommentObject = (html: string) => {
   const $ = cheerio.load(html);
   const div = $('div[itemtype="http://schema.org/Review"]');
 
-  const titleChildrens = div.children()[0];
   const comment = $(div.children()[1]).text();
   const details = div.children()[3].children;
 
