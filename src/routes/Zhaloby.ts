@@ -47,9 +47,14 @@ const extractCommentObject = (html: string) => {
   if (date.includes("Сегодня")) {
     convertedDate = parseInt(String(new Date().getTime() / 1000));
   }
+
+  const commentWithRemovedCharacters = comment
+    .replace(/\t/g, "")
+    .replace(/\n/g, "");
+
   return {
     name: authorNick,
-    text: `${title}: ${comment}`,
+    text: `${title}: ${commentWithRemovedCharacters}`,
     date: convertedDate
   };
 };
