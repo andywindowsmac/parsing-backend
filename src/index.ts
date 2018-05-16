@@ -1,9 +1,9 @@
-import * as express from 'express';
-import * as bodyParser from 'body-parser';
-import chalk from 'chalk';
-import { Application } from 'express';
+import * as express from "express";
+import * as bodyParser from "body-parser";
+import chalk from "chalk";
+import { Application } from "express";
 
-import RootRouter from './routes';
+import RootRouter from "./routes";
 
 const DEV_PORT = 3000;
 const PORT = process.env.PORT || DEV_PORT;
@@ -13,11 +13,20 @@ const app: Application = express();
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
-    extended: true,
-  }),
+    extended: true
+  })
 );
 
-app.use('/api/v1/', RootRouter);
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
+app.use("/api/v1/", RootRouter);
 
 app.listen(PORT, err => {
   if (err) {
@@ -27,4 +36,3 @@ app.listen(PORT, err => {
 
   console.log(chalk.green(`Express server running on port:  ${PORT}`));
 });
-
