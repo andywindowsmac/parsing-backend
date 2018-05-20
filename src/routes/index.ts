@@ -1,4 +1,4 @@
-import { collectComments as collectSprComments } from "./Spr";
+// import { collectComments as collectSprComments } from "./Spr";
 import { collectComments as collectZhalobyComments } from "./Zhaloby";
 
 import { getTweets } from "../services/Twitter";
