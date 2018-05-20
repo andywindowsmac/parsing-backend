@@ -2,6 +2,7 @@ import * as Rx from "rxjs";
 import * as windows1251 from "windows-1251";
 import * as cheerio from "cheerio";
 import * as requestPromise from "request-promise";
+import axios from "axios";
 import * as requestS from "request";
 import * as icon from "iconv-lite";
 import { removeDuplicateFromArray } from "../utils/Scrapper";
@@ -117,7 +118,7 @@ const collectComments = async (companyName: string) => {
     const encodedQuery = windows1251.encode(companyName);
     const query = `https://www.spr.kz/res_new.php?findtext=${encodedQuery}&id_razdel_find=0&id_okrug_find=15`;
 
-    const response = await requestPromise(query);
+    const { data: response } = await axios.get(query);
     const links = extractLinksFromHTML(response);
 
     let index = 1;
@@ -137,6 +138,7 @@ const collectComments = async (companyName: string) => {
           console.log(commentsQuery);
           return observableRequest(`https://${commentsQuery}`);
         })
+        .catch(error => console.log("Catched: ", error))
         .map(comment => ({ [index++]: comment }))
         .reduce((acc, comment) => ({ ...acc, ...comment }));
 
