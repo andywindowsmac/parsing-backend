@@ -96,12 +96,12 @@ const webSocketConnectionListener = wss =>
         twitter();
       } catch (err) {
         console.log("Error root: ", err);
-        ws.send("Error");
+        ws.send(JSON.stringify({ error: "Error" }));
       }
     });
 
     //send immediatly a feedback to the incoming connection
-    ws.send("Connection established");
+    ws.send(JSON.stringify({ message: "Connection established" }));
   });
 
 export default webSocketConnectionListener;
