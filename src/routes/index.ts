@@ -76,24 +76,24 @@ const webSocketConnectionListener = wss =>
     ws.on("message", async (companyName: string) => {
       //log the received message and send it back to the client
       try {
-        // const zhaloby = async () => {
-        //   const comments = await getFromZhaloby(companyName);
-        //   ws.send(JSON.stringify({ zhaloby: comments }));
-        // };
+        const zhaloby = async () => {
+          const comments = await getFromZhaloby(companyName);
+          ws.send(JSON.stringify({ zhaloby: comments }));
+        };
 
         const spr = async () => {
           const comments = await getFromSpr(companyName);
           ws.send(JSON.stringify({ spr: comments }));
         };
 
-        // const twitter = async () => {
-        //   const comments = await getFromTwitter(companyName);
-        //   ws.send(JSON.stringify({ twitter: comments }));
-        // };
+        const twitter = async () => {
+          const comments = await getFromTwitter(companyName);
+          ws.send(JSON.stringify({ twitter: comments }));
+        };
 
-        // zhaloby();
+        zhaloby();
         spr();
-        // twitter();
+        twitter();
       } catch (err) {
         console.log("Error root: ", err);
         ws.send("Error");
