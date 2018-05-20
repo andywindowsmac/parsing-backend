@@ -1,3 +1,5 @@
+import { tap, delayWhen } from "rxjs/operators";
+import { timer } from "rxjs/observable/timer";
 import * as Rx from "rxjs";
 import * as windows1251 from "windows-1251";
 import * as cheerio from "cheerio";
@@ -79,14 +81,25 @@ const extractCommentObject = (html: string) => {
 
 const convertToPromise = (url: string): Promise<Object> => {
   return new Promise((resolve, reject) => {
-    requestS(url)
+    requestS(url, res => {
+      if (!res) {
+        reject(url);
+      }
+    })
       .pipe(icon.decodeStream("win1251"))
       .pipe(icon.encodeStream("utf-8"))
       .collect((err, decodedBody) => {
-        if (err) reject(err);
+        if (err) {
+          console.log("Collect err: ", err);
+          reject(url);
+        }
 
         const comment = extractCommentObject(decodedBody.toString());
         resolve(comment);
+      })
+      .on("error", err => {
+        console.log("err: ", err);
+        reject(url);
       });
   });
 };
@@ -94,52 +107,64 @@ const convertToPromise = (url: string): Promise<Object> => {
 const observableRequest = (link: string) => {
   const promise = convertToPromise(link)
     .then(comment => comment)
-    .catch(err => _throw(err));
+    .catch(err => {
+      console.log("Request err: ", err);
+      throw new Error(err);
+    });
 
   return Rx.Observable.fromPromise(promise);
 };
 
 const collectComments = async (companyName: string) => {
-  const encodedQuery = windows1251.encode(companyName);
-  const query = `https://www.spr.kz/res_new.php?findtext=${encodedQuery}&id_razdel_find=0&id_okrug_find=15`;
+  try {
+    const encodedQuery = windows1251.encode(companyName);
+    const query = `https://www.spr.kz/res_new.php?findtext=${encodedQuery}&id_razdel_find=0&id_okrug_find=15`;
 
-  const response = await requestPromise(query);
-  const links = extractLinksFromHTML(response);
+    const response = await requestPromise(query);
+    const links = extractLinksFromHTML(response);
 
-  let index = 1;
+    let index = 1;
 
-  if (links.length === 0) {
-    return [];
-  }
+    if (links.length === 0) {
+      return [];
+    }
 
-  const commentRequestStream = observable =>
-    observable
-      .flatMap((html: string) => {
-        const commentsLinks = extractCommentsLinks(html);
-        return commentsLinks;
-      })
-      .flatMap((commentLink: string) => {
-        var commentsQuery = commentLink.substr(2);
-        return observableRequest(`https://${commentsQuery}`);
-      })
-      .map(comment => ({ [index++]: comment }))
-      .reduce((acc, comment) => ({ ...acc, ...comment }));
+    const commentRequestStream = observable =>
+      observable
+        .flatMap((html: string) => {
+          const commentsLinks = extractCommentsLinks(html);
+          return commentsLinks;
+        })
+        .flatMap((commentLink: string) => {
+          var commentsQuery = commentLink.substr(2);
+          console.log(commentsQuery);
+          return observableRequest(`https://${commentsQuery}`);
+        })
+        .map(comment => ({ [index++]: comment }))
+        .reduce((acc, comment) => ({ ...acc, ...comment }));
 
-  return new Promise(resolve =>
-    Rx.Observable.from(links)
-      .flatMap((link: string) => {
-        const commentsQuery = link.substr(2);
-        return Rx.Observable.from(
-          commentRequestStream(
-            Rx.Observable.fromPromise(
-              requestPromise(`https://${commentsQuery}`)
+    return new Promise(resolve =>
+      Rx.Observable.from(links)
+        .flatMap((link: string) => {
+          const commentsQuery = link.substr(2);
+          console.log(commentsQuery);
+          return Rx.Observable.from(
+            commentRequestStream(
+              Rx.Observable.fromPromise(
+                requestPromise(`https://${commentsQuery}`)
+              )
             )
-          )
-        );
-      })
-      .reduce((_s, acc) => ({ ...acc, ..._s }))
-      .subscribe(comments => resolve(comments))
-  );
+          );
+        })
+        .reduce((_s, acc) => ({ ...acc, ..._s }))
+        .subscribe(
+          comments =>
+            console.log(Object.keys(comments).length) || resolve(comments)
+        )
+    );
+  } catch (err) {
+    console.log("Spr error: ", err);
+  }
 };
 
 export { collectComments };

@@ -1,7 +1,9 @@
-import * as express from "express";
-import * as bodyParser from "body-parser";
-import chalk from "chalk";
 import { Application } from "express";
+import * as bodyParser from "body-parser";
+import * as express from "express";
+import * as http from "http";
+import * as WebSocket from "ws";
+import chalk from "chalk";
 
 import RootRouter from "./routes";
 
@@ -26,11 +28,18 @@ app.use((_, res, next) => {
   next();
 });
 
-app.use("/api/v1/", RootRouter);
+//initialize a simple http server
+const server = http.createServer(app);
+//initialize the WebSocket server instance
+const wss = new WebSocket.Server({ server });
 
-app.listen(PORT, err => {
+RootRouter(wss);
+
+// app.use("/api/v1/", RootRouter);
+
+server.listen(PORT, err => {
   if (err) {
-    console.log(chalk.red(`Error ${err}`));
+    console.log(chalk.red(`Error from Main Handler ${err}`));
     return;
   }
 

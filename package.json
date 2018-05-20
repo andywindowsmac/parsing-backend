@@ -29,12 +29,14 @@
     "rxjs": "^5.5.7",
     "ts-node": "^5.0.1",
     "twit": "^2.2.9",
-    "typescript": "^2.7.2",
     "vk-node": "0.0.4",
-    "windows-1251": "^1.0.0"
+    "windows-1251": "^1.0.0",
+    "ws": "^5.1.1"
   },
   "devDependencies": {
+    "@types/ws": "^5.1.1",
     "chalk": "^2.3.2",
-    "nodemon": "^1.17.2"
+    "nodemon": "^1.17.2",
+    "typescript": "^2.8.3"
   }
 }

@@ -37,61 +37,76 @@ const collectData = async (options: {
   }
 };
 
-RootRouter.post("/twitter", async (req, res) => {
-  const { companyName } = req.body;
+const getFromTwitter = async companyName => {
   if (!companyName) {
-    res.status(HTTPCodes.error).json({ message: "Provide company name" });
-    return;
+    throw new Error("Provide company name");
+  }
+  const tweets = await collectData({
+    collectFunction: getTweets,
+    companyName
+  });
+
+  return tweets;
+};
+
+const getFromSpr = async companyName => {
+  if (!companyName) {
+    throw new Error("Provide company name");
   }
 
-  try {
-    const tweets = await collectData({
-      collectFunction: getTweets,
-      companyName
+  const comments = await collectData({
+    collectFunction: collectSprComments,
+    companyName
+  });
+
+  return comments;
+};
+
+const getFromZhaloby = async companyName => {
+  if (!companyName) {
+    throw new Error("Provide company name");
+  }
+
+  const comments = await collectData({
+    collectFunction: collectZhalobyComments,
+    companyName
+  });
+
+  return comments;
+};
+
+const webSocketConnectionListener = wss =>
+  wss.on("connection", (ws: WebSocket) => {
+    //connection is up, let's add a simple simple event
+    ws.on("message", async (companyName: string) => {
+      //log the received message and send it back to the client
+      try {
+        const zhaloby = async () => {
+          const comments = await getFromZhaloby(companyName);
+          ws.send(JSON.stringify({ zhaloby: comments }));
+        };
+
+        // const spr = async () => {
+        //   const comments = await getFromSpr(companyName);
+        //   ws.send(JSON.stringify({ spr: comments }));
+        // };
+
+        const twitter = async () => {
+          const comments = await getFromTwitter(companyName);
+          ws.send(JSON.stringify({ twitter: comments }));
+        };
+
+        zhaloby();
+        // spr();
+        twitter();
+      } catch (err) {
+        console.log("Error root: ", err);
+        ws.send("Error");
+      }
     });
 
-    res.status(HTTPCodes.success).json(tweets);
-  } catch (err) {
-    res.status(500).json({ message: "Failed" });
-  }
-});
+    //send immediatly a feedback to the incoming connection
+    ws.send("Connection established");
+  });
 
-RootRouter.post("/spr", async (req, res) => {
-  const { companyName } = req.body;
-  if (!companyName) {
-    res.status(HTTPCodes.error).json({ message: "Provide company name" });
-    return;
-  }
-
-  try {
-    const comments = await collectData({
-      collectFunction: collectSprComments,
-      companyName
-    });
-
-    res.status(HTTPCodes.success).json(comments);
-  } catch (err) {
-    res.status(500).json({ message: "Failed" });
-  }
-});
-
-RootRouter.post("/zhaloby", async (req, res) => {
-  const { companyName } = req.body;
-  if (!companyName) {
-    res.status(HTTPCodes.error).json({ message: "Provide company name" });
-    return;
-  }
-
-  try {
-    const comments = await collectData({
-      collectFunction: collectZhalobyComments,
-      companyName
-    });
-
-    res.status(HTTPCodes.success).json(comments);
-  } catch (err) {
-    res.status(500).json({ message: "Failed" });
-  }
-});
-
-export default RootRouter;
+export default webSocketConnectionListener;
