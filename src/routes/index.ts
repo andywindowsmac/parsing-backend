@@ -1,4 +1,4 @@
-import { collectComments as collectSprComments } from "./Spr";
+// import { collectComments as collectSprComments } from "./Spr";
 import { collectComments as collectZhalobyComments } from "./Zhaloby";
 
 import { getTweets } from "../services/Twitter";
@@ -44,18 +44,18 @@ const getFromTwitter = async companyName => {
   return tweets;
 };
 
-const getFromSpr = async companyName => {
-  if (!companyName) {
-    throw new Error("Provide company name");
-  }
+// const getFromSpr = async companyName => {
+//   if (!companyName) {
+//     throw new Error("Provide company name");
+//   }
 
-  const comments = await collectData({
-    collectFunction: collectSprComments,
-    companyName
-  });
+//   const comments = await collectData({
+//     collectFunction: collectSprComments,
+//     companyName
+//   });
 
-  return comments;
-};
+//   return comments;
+// };
 
 const getFromZhaloby = async companyName => {
   if (!companyName) {
@@ -81,10 +81,10 @@ const webSocketConnectionListener = wss =>
           ws.send(JSON.stringify({ zhaloby: comments }));
         };
 
-        const spr = async () => {
-          const comments = await getFromSpr(companyName);
-          ws.send(JSON.stringify({ spr: comments }));
-        };
+        // const spr = async () => {
+        //   const comments = await getFromSpr(companyName);
+        //   ws.send(JSON.stringify({ spr: comments }));
+        // };
 
         const twitter = async () => {
           const comments = await getFromTwitter(companyName);
@@ -92,7 +92,7 @@ const webSocketConnectionListener = wss =>
         };
 
         zhaloby();
-        spr();
+        // spr();
         twitter();
       } catch (err) {
         console.log("Error root: ", err);

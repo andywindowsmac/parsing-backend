@@ -7,7 +7,7 @@ import chalk from "chalk";
 
 import RootRouter from "./routes";
 
-const DEV_PORT = 3000;
+const DEV_PORT = 9999;
 const PORT = process.env.PORT || DEV_PORT;
 const app: Application = express();
 

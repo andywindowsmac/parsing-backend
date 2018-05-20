@@ -1,11 +1,13 @@
+// import { _throw } from "rxjs/observable/throw";
+import { removeDuplicateFromArray } from "../utils/Scrapper";
+// import { catchError } from "rxjs/operators";
+import * as cheerio from "cheerio";
+import * as icon from "iconv-lite";
+import * as requestPromise from "request-promise";
+import * as requestS from "request";
 import * as Rx from "rxjs";
 import * as windows1251 from "windows-1251";
-import * as cheerio from "cheerio";
-import * as requestPromise from "request-promise";
 import axios from "axios";
-import * as requestS from "request";
-import * as icon from "iconv-lite";
-import { removeDuplicateFromArray } from "../utils/Scrapper";
 
 const extractLinksFromHTML = (html: string): Array<string> => {
   const $ = cheerio.load(html, { decodeEntities: true });
@@ -79,25 +81,22 @@ const extractCommentObject = (html: string) => {
 
 const convertToPromise = (url: string): Promise<Object> => {
   return new Promise((resolve, reject) => {
-    requestS(url, res => {
-      if (!res) {
-        reject(url);
+    requestS(url, error => {
+      if (!error) {
+        console.log("Converter Error: ", error);
+        reject(error);
+        return;
       }
     })
       .pipe(icon.decodeStream("win1251"))
       .pipe(icon.encodeStream("utf-8"))
       .collect((err, decodedBody) => {
         if (err) {
-          console.log("Collect err: ", err);
           reject(url);
         }
 
         const comment = extractCommentObject(decodedBody.toString());
         resolve(comment);
-      })
-      .on("error", err => {
-        console.log("err: ", err);
-        reject(url);
       });
   });
 };
@@ -105,10 +104,7 @@ const convertToPromise = (url: string): Promise<Object> => {
 const observableRequest = (link: string) => {
   const promise = convertToPromise(link)
     .then(comment => comment)
-    .catch(err => {
-      console.log("Request err: ", err);
-      throw new Error(err);
-    });
+    .catch(() => null);
 
   return Rx.Observable.fromPromise(promise);
 };
@@ -134,16 +130,15 @@ const collectComments = async (companyName: string) => {
           return commentsLinks;
         })
         .flatMap((commentLink: string) => {
-          var commentsQuery = commentLink.substr(2);
-          console.log(commentsQuery);
+          const commentsQuery = commentLink.substr(2);
           return observableRequest(`https://${commentsQuery}`);
         })
-        .catch(error => console.log("Catched: ", error))
-        .map(comment => ({ [index++]: comment }))
+        .filter(comment => comment)
+        .map(comment => console.log(comment) || { [index++]: comment })
         .reduce((acc, comment) => ({ ...acc, ...comment }));
 
     return new Promise(resolve =>
-      Rx.Observable.from(links)
+      Rx.Observable.from([links[0]])
         .flatMap((link: string) => {
           const commentsQuery = link.substr(2);
           console.log(commentsQuery);
