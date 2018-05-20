@@ -44,18 +44,18 @@ const getFromTwitter = async companyName => {
   return tweets;
 };
 
-const getFromSpr = async companyName => {
-  if (!companyName) {
-    throw new Error("Provide company name");
-  }
+// const getFromSpr = async companyName => {
+//   if (!companyName) {
+//     throw new Error("Provide company name");
+//   }
 
-  const comments = await collectData({
-    collectFunction: collectSprComments,
-    companyName
-  });
+//   const comments = await collectData({
+//     collectFunction: collectSprComments,
+//     companyName
+//   });
 
-  return comments;
-};
+//   return comments;
+// };
 
 const getFromZhaloby = async companyName => {
   if (!companyName) {
@@ -71,7 +71,7 @@ const getFromZhaloby = async companyName => {
 };
 
 const webSocketConnectionListener = wss =>
-  wss.on("connection", (ws: WebSocket) => {
+  wss.on("connection", (ws: any) => {
     //connection is up, let's add a simple simple event
     ws.on("message", async (companyName: string) => {
       //log the received message and send it back to the client
