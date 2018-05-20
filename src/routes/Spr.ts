@@ -1,12 +1,9 @@
-import { tap, delayWhen } from "rxjs/operators";
-import { timer } from "rxjs/observable/timer";
 import * as Rx from "rxjs";
 import * as windows1251 from "windows-1251";
 import * as cheerio from "cheerio";
 import * as requestPromise from "request-promise";
 import * as requestS from "request";
 import * as icon from "iconv-lite";
-import { _throw } from "rxjs/observable/throw";
 import { removeDuplicateFromArray } from "../utils/Scrapper";
 
 const extractLinksFromHTML = (html: string): Array<string> => {

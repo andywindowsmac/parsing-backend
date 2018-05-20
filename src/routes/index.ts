@@ -1,12 +1,7 @@
-import * as express from "express";
-
 import { collectComments as collectSprComments } from "./Spr";
 import { collectComments as collectZhalobyComments } from "./Zhaloby";
 
-import HTTPCodes from "../HTTPCode";
 import { getTweets } from "../services/Twitter";
-
-const RootRouter = express.Router();
 
 const prepareComments = (comments: Object) => {
   const commentsArr = Object.keys(comments).map(key => comments[key]);

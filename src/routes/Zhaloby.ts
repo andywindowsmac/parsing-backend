@@ -1,5 +1,3 @@
-import { tap, delayWhen } from "rxjs/operators";
-import { timer } from "rxjs/observable/timer";
 import { _throw } from "rxjs/observable/throw";
 import * as _ from "lodash";
 import * as cheerio from "cheerio";
