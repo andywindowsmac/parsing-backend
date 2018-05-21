@@ -73,7 +73,7 @@ const prepareTweets = (tweets: Array<TweetType> | any) =>
       let fullText = "";
       if (extractedLink) {
         const fText = await getFullText(extractedLink);
-        fullText = fText.replace(/\t/g, "").replace(/\n/g, "");
+        fullText = fText ? fText.replace(/\t/g, "").replace(/\n/g, "") : text;
       }
 
       return {
