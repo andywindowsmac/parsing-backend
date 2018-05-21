@@ -82,8 +82,7 @@ const extractCommentObject = (html: string) => {
 const convertToPromise = (url: string): Promise<Object> => {
   return new Promise((resolve, reject) => {
     requestS(url, error => {
-      if (!error) {
-        console.log("Converter Error: ", error);
+      if (error) {
         reject(error);
         return;
       }
@@ -129,6 +128,7 @@ const collectComments = async (companyName: string) => {
           const commentsLinks = extractCommentsLinks(html);
           return commentsLinks;
         })
+        .delay(5000)
         .flatMap((commentLink: string) => {
           const commentsQuery = commentLink.substr(2);
           return observableRequest(`https://${commentsQuery}`);
@@ -138,10 +138,9 @@ const collectComments = async (companyName: string) => {
         .reduce((acc, comment) => ({ ...acc, ...comment }));
 
     return new Promise(resolve =>
-      Rx.Observable.from([links[0]])
+      Rx.Observable.from(links)
         .flatMap((link: string) => {
           const commentsQuery = link.substr(2);
-          console.log(commentsQuery);
           return Rx.Observable.from(
             commentRequestStream(
               Rx.Observable.fromPromise(
@@ -151,10 +150,7 @@ const collectComments = async (companyName: string) => {
           );
         })
         .reduce((_s, acc) => ({ ...acc, ..._s }))
-        .subscribe(
-          comments =>
-            console.log(Object.keys(comments).length) || resolve(comments)
-        )
+        .subscribe(comments => resolve(comments))
     );
   } catch (err) {
     console.log("Spr error: ", err);

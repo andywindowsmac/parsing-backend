@@ -70,8 +70,6 @@ const prepareTweets = (tweets: Array<TweetType> | any) =>
 
       const date = new Date(created_at).getTime() / 1000;
       const extractedLink = urlify(text);
-      // const extractedLink = text.split("…")[1];
-      console.log(text, " : ", extractedLink);
       let fullText = "";
       if (extractedLink) {
         const fText = await getFullText(extractedLink);
