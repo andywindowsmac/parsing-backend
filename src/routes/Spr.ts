@@ -128,7 +128,7 @@ const collectComments = async (companyName: string) => {
           const commentsLinks = extractCommentsLinks(html);
           return commentsLinks;
         })
-        .delay(5000)
+        .delay(10000)
         .flatMap((commentLink: string) => {
           const commentsQuery = commentLink.substr(2);
           return observableRequest(`https://${commentsQuery}`);
