@@ -10,6 +10,11 @@ const T = new Twit({
   timeout_ms: 60 * 1000 // optional HTTP request timeout to apply to all requests.
 });
 
+const urlify = text => {
+  var urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.match(urlRegex) ? text.match(urlRegex)[0] : null;
+};
+
 const getTweets = (searchQuery: string) =>
   new Promise((resolve, reject) =>
     T.get(
@@ -64,7 +69,9 @@ const prepareTweets = (tweets: Array<TweetType> | any) =>
       } = tweet;
 
       const date = new Date(created_at).getTime() / 1000;
-      const extractedLink = text.split("…")[1];
+      const extractedLink = urlify(text);
+      // const extractedLink = text.split("…")[1];
+      console.log(text, " : ", extractedLink);
       let fullText = "";
       if (extractedLink) {
         const fText = await getFullText(extractedLink);
