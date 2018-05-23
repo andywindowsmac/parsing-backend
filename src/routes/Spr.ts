@@ -134,7 +134,7 @@ const collectComments = async (companyName: string) => {
           return observableRequest(`https://${commentsQuery}`);
         })
         .filter(comment => comment)
-        .map(comment => console.log(comment) || { [index++]: comment })
+        .map(comment => ({ [index++]: comment }))
         .reduce((acc, comment) => ({ ...acc, ...comment }));
 
     return new Promise(resolve =>

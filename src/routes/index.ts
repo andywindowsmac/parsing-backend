@@ -90,10 +90,22 @@ const webSocketConnectionListener = wss =>
           const comments = await getFromTwitter(companyName);
           ws.send(JSON.stringify({ twitter: comments }));
         };
+        try {
+          zhaloby();
+        } catch (err) {
+          console.log(err);
+        }
+        try {
+          spr();
+        } catch (err) {
+          console.log(err);
+        }
 
-        zhaloby();
-        spr();
-        twitter();
+        try {
+          twitter();
+        } catch (err) {
+          console.log(err);
+        }
       } catch (err) {
         console.log("Error root: ", err);
         ws.send(JSON.stringify({ error: "Error" }));
